@@ -15,6 +15,7 @@ import {
   type BookFilter,
   calculatePrice,
   createBook,
+  deleteBook,
   getBook,
   listBooks,
   listCountries,
@@ -132,10 +133,7 @@ export function useCalculatePrice(book: Pick<Book, 'id' | 'title'>) {
     },
     onError: (error) => {
       notifyError(error)
-      // The book was deleted elsewhere: refresh everything so it disappears.
-      if (error instanceof ApiError && error.status === 404) {
-        return queryClient.invalidateQueries({ queryKey: bookKeys.all })
-      }
+      if (isNotFound(error)) return forgetBook(queryClient, book.id)
     },
   })
 
@@ -155,16 +153,33 @@ export function useSaveBook(id?: number) {
     onSuccess: (book) => {
       queryClient.setQueryData(bookKeys.detail(book.id), book)
       // Stock or category changes can move the book between pages, tabs and totals.
-      return Promise.all([
-        queryClient.invalidateQueries({ queryKey: bookKeys.lists() }),
-        queryClient.invalidateQueries({ queryKey: bookKeys.counts() }),
-      ])
+      return refreshCatalog(queryClient)
     },
     onError: (error) => {
-      // Edited a book that was deleted elsewhere: refresh everything so it disappears.
-      if (error instanceof ApiError && error.status === 404) {
-        return queryClient.invalidateQueries({ queryKey: bookKeys.all })
-      }
+      if (id !== undefined && isNotFound(error)) return forgetBook(queryClient, id)
+    },
+  })
+}
+
+/**
+ * Deletes a book. `onDeleted` runs once it is gone, also when it was already deleted elsewhere
+ * (404): either way the book no longer exists and the UI should move on.
+ */
+export function useDeleteBook(book: Pick<Book, 'id' | 'title'>, onDeleted?: () => void) {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => deleteBook(book.id),
+    onSuccess: () => {
+      toast.success(`«${book.title}» eliminado del catálogo`)
+      onDeleted?.()
+      return forgetBook(queryClient, book.id, { panelIsClosing: true })
+    },
+    onError: (error) => {
+      if (!isNotFound(error)) return notifyError(error)
+      toast.info(`«${book.title}» ya había sido eliminado`)
+      onDeleted?.()
+      return forgetBook(queryClient, book.id, { panelIsClosing: true })
     },
   })
 }
@@ -176,6 +191,34 @@ export function useCountries() {
     // The supported countries only change with a backend release.
     staleTime: Infinity,
   })
+}
+
+function isNotFound(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 404
+}
+
+/** Refetches every catalog page and total, after a change that can move books between them. */
+function refreshCatalog(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: bookKeys.lists() }),
+    queryClient.invalidateQueries({ queryKey: bookKeys.counts() }),
+  ])
+}
+
+/**
+ * A book no longer exists (deleted here or elsewhere): drop what is known about it.
+ *
+ * After a delete, the panel showing it is closing, so its data is only marked stale: refetching
+ * it now would flash "not found". When another action finds out (404), the screens that are
+ * still open refetch it and explain that the book is gone.
+ */
+function forgetBook(queryClient: QueryClient, id: number, { panelIsClosing = false } = {}) {
+  queryClient.removeQueries({ queryKey: bookKeys.priceCalculation(id) })
+  void queryClient.invalidateQueries({
+    queryKey: bookKeys.detail(id),
+    refetchType: panelIsClosing ? 'none' : 'active',
+  })
+  return refreshCatalog(queryClient)
 }
 
 function findBookInLists(queryClient: QueryClient, id: number): Book | undefined {

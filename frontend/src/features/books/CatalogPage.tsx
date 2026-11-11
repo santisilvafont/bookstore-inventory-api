@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button'
 import { Pagination } from '../../components/ui/Pagination'
 import { StatusMessage } from '../../components/ui/StatusMessage'
 import {
+  CATALOG_HEADING_ID,
   type CatalogParams,
   PAGE_SIZE,
   type StockView,
@@ -59,17 +60,21 @@ export function CatalogPage() {
   const hrefFor = (stock: StockView) =>
     `?${toSearchParams({ ...params, stock, category: '', page: 1 })}`
 
-  // A page beyond the last one (e.g. an old link) gets a 404 from the API: go back to page 1.
+  // A page beyond the last one gets a 404 from the API. If this page was just emptied (its last
+  // book deleted) go to the previous one; for an old or mistyped link, start over at page 1.
   const isPageOutOfRange =
     params.page > 1 && books.error instanceof ApiError && books.error.status === 404
+  const fallbackPage = books.data?.page === params.page ? params.page - 1 : 1
   useEffect(() => {
     // Replace, not push: otherwise Back would return to the invalid page and loop.
-    if (isPageOutOfRange) update({ page: 1 }, { replace: true })
-  }, [isPageOutOfRange, update])
+    if (isPageOutOfRange) update({ page: fallbackPage }, { replace: true })
+  }, [isPageOutOfRange, fallbackPage, update])
 
   return (
     <div className="flex flex-col gap-5">
-      <h1 className="sr-only">Catálogo</h1>
+      <h1 id={CATALOG_HEADING_ID} tabIndex={-1} className="sr-only">
+        Catálogo
+      </h1>
 
       <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-4 border-b border-line">
         <StockTabs current={params.stock} counts={counts} hrefFor={hrefFor} />

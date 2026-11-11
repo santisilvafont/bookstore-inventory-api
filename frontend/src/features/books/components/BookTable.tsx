@@ -4,6 +4,7 @@ import type { Book } from '../../../api/types'
 import { formatAmount } from '../../../lib/format'
 import { inAppNavigationState } from '../navigation'
 import { PriceCell } from './PriceCell'
+import { RowActions } from './RowActions'
 import { StockLevel } from './StockLevel'
 
 const HEADER_CELL = 'px-3 pt-2 pb-2.5 font-medium first:pl-0 last:pr-0'
@@ -50,6 +51,9 @@ export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }
             <th scope="col" className={`${HEADER_CELL} text-right`}>
               Precio de venta
             </th>
+            <th scope="col" className={`${HEADER_CELL} w-11`}>
+              <span className="sr-only">Acciones</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -83,6 +87,9 @@ export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }
               </td>
               <td className={`${CELL} text-right whitespace-nowrap tabular-nums`}>
                 <PriceCell book={book} />
+              </td>
+              <td className="py-1.5 pl-3 text-right align-top">
+                <RowActions book={book} />
               </td>
             </tr>
           ))}

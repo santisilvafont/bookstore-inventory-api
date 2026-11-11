@@ -19,6 +19,13 @@ Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 Element.prototype.hasPointerCapture ??= () => false
 
+// Nor ResizeObserver, which the dropdown menu uses to position itself.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 afterEach(() => {
   cleanup()
 })

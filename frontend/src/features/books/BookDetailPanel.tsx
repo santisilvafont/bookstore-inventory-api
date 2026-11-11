@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router'
 
 import { ApiError } from '../../api/client'
@@ -8,6 +9,7 @@ import { SidePanel } from '../../components/ui/SidePanel'
 import { Spinner } from '../../components/ui/Spinner'
 import { formatAmount, formatInteger, formatMoney } from '../../lib/format'
 import { BookLoadError } from './components/BookLoadError'
+import { DeleteBookDialog } from './components/DeleteBookDialog'
 import { PriceBreakdown } from './components/PriceBreakdown'
 import { inAppNavigationState, parseBookId, useCloseOverlay } from './navigation'
 import { useBook, useCalculatePrice, useCountries, useLatestPriceCalculation } from './queries'
@@ -65,6 +67,7 @@ function BookDetailContent({ book, onClose }: { book: Book; onClose: () => void 
     book.supplier_country
   const hasPrice = book.selling_price_local !== null
   const { search } = useLocation()
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false)
 
   return (
     <SidePanel
@@ -88,6 +91,20 @@ function BookDetailContent({ book, onClose }: { book: Book; onClose: () => void 
           >
             Editar
           </Link>
+          <Button
+            variant="danger-link"
+            className="ml-auto"
+            onClick={() => setIsConfirmingDelete(true)}
+          >
+            Eliminar
+          </Button>
+          {isConfirmingDelete && (
+            <DeleteBookDialog
+              book={book}
+              onClose={() => setIsConfirmingDelete(false)}
+              onDeleted={onClose}
+            />
+          )}
         </>
       }
     >

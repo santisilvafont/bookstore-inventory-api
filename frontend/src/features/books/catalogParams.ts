@@ -3,6 +3,8 @@ import type { BookFilter } from '../../api/books'
 /** Same default as the backend's /books/low-stock endpoint. */
 export const DEFAULT_LOW_STOCK_THRESHOLD = 10
 export const PAGE_SIZE = 10
+/** Where focus goes when the element that had it disappears (e.g. a deleted row). */
+export const CATALOG_HEADING_ID = 'catalog-heading'
 
 export type StockView = 'all' | 'low' | 'out'
 
