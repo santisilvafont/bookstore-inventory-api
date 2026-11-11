@@ -163,6 +163,8 @@ cython_debug/
 node_modules/
 *.tsbuildinfo
 npm-debug.log*
+# The Python template above ignores every lib/ folder; this one is source code.
+!frontend/src/lib/
 
 # Editors and local tooling
 .claude/

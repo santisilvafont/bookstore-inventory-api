@@ -6,5 +6,11 @@
     "react/exhaustive-deps": "warn",
     "react/only-export-components": ["warn", { "allowConstantExport": true }]
   },
+  "overrides": [
+    {
+      "files": ["src/test/**", "**/*.test.tsx"],
+      "rules": { "react/only-export-components": "off" }
+    }
+  ],
   "ignorePatterns": ["dist"]
 }

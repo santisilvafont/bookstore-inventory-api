@@ -7,6 +7,8 @@ export interface Book {
   isbn: string
   cost_usd: number
   selling_price_local: number | null
+  /** ISO 4217 code of the local currency, derived from supplier_country by the backend. */
+  currency: string
   stock_quantity: number
   category: string
   supplier_country: string
