@@ -30,6 +30,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bookstore}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
+      SEED_SAMPLE_DATA: ${SEED_SAMPLE_DATA:-true}
     volumes:
       - ./backend:/app
     ports:
