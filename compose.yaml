@@ -16,6 +16,10 @@ services:
   backend:
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
+    # Optional overrides (see .env.example); variables not set keep the defaults in settings.py.
+    env_file:
+      - path: .env
+        required: false
     environment:
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-dev-only-insecure-secret-key}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-true}

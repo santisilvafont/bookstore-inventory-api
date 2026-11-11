@@ -79,6 +79,18 @@ class BookSerializer(serializers.ModelSerializer):
             ) from error
 
 
+class PriceCalculationSerializer(serializers.Serializer):
+    book_id = serializers.IntegerField(read_only=True)
+    cost_usd = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    exchange_rate = serializers.DecimalField(max_digits=18, decimal_places=6, read_only=True)
+    cost_local = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
+    margin_percentage = serializers.IntegerField(read_only=True)
+    selling_price_local = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
+    currency = serializers.CharField(read_only=True)
+    rate_source = serializers.CharField(read_only=True)
+    calculation_timestamp = serializers.DateTimeField(read_only=True)
+
+
 class CategorySearchSerializer(serializers.Serializer):
     category = serializers.CharField(max_length=100)
 

@@ -106,3 +106,10 @@ REST_FRAMEWORK = {
     "COERCE_DECIMAL_TO_STRING": False,
     "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
 }
+
+EXCHANGE_RATE_API_URL = env(
+    "EXCHANGE_RATE_API_URL", "https://api.exchangerate-api.com/v4/latest/USD"
+)
+EXCHANGE_RATE_API_TIMEOUT = float(env("EXCHANGE_RATE_API_TIMEOUT", "5"))
+# The free API updates once a day, so an hour of caching costs no freshness worth having.
+EXCHANGE_RATE_CACHE_SECONDS = int(env("EXCHANGE_RATE_CACHE_SECONDS", "3600"))

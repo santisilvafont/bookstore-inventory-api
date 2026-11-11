@@ -31,8 +31,9 @@ class Book(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(Decimal("0.01"), message="El costo debe ser mayor a 0.")],
     )
+    # Wide enough for high-denomination currencies (COP, VES...) applied to expensive books.
     selling_price_local = models.DecimalField(
-        max_digits=14, decimal_places=2, null=True, blank=True
+        max_digits=20, decimal_places=2, null=True, blank=True
     )
     stock_quantity = models.PositiveIntegerField(default=0)
     category = models.CharField(max_length=100)
