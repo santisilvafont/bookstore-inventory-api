@@ -95,3 +95,14 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+
+REST_FRAMEWORK = {
+    # The specification defines a public API, so no authentication is configured.
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    # JSON only: without authentication there is no CSRF check, and accepting form-encoded
+    # bodies would let any website create books through a plain HTML form.
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "COERCE_DECIMAL_TO_STRING": False,
+    "EXCEPTION_HANDLER": "config.exceptions.api_exception_handler",
+}

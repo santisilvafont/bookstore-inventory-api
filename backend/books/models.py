@@ -8,6 +8,15 @@ from .countries import country_choices
 from .isbn import validate_isbn
 
 
+class BookQuerySet(models.QuerySet):
+    def in_category(self, category):
+        return self.filter(category__icontains=category)
+
+    def low_stock(self, threshold):
+        """Books with stock at or below the threshold, most urgent first."""
+        return self.filter(stock_quantity__lte=threshold).order_by("stock_quantity", "id")
+
+
 class Book(models.Model):
     title = models.CharField(max_length=255)
     author = models.CharField(max_length=255)
@@ -30,6 +39,8 @@ class Book(models.Model):
     supplier_country = models.CharField(max_length=2, choices=country_choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = BookQuerySet.as_manager()
 
     class Meta:
         ordering = ["-created_at", "-id"]
