@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Q
 
-from .countries import country_choices
+from .countries import SUPPORTED_COUNTRIES, country_choices
 from .isbn import validate_isbn
 
 
@@ -60,3 +60,30 @@ class Book(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.isbn})"
+
+    def save(self, *args, **kwargs):
+        # A selling price was computed from the cost and the currency it was stored with; if
+        # either changes, the price no longer applies. Enforced here so every write path
+        # (API, admin, shell) follows the rule.
+        stored = getattr(self, "_stored_pricing_inputs", None)
+        if stored is not None and stored != self._pricing_inputs():
+            self.selling_price_local = None
+            update_fields = kwargs.get("update_fields")
+            if update_fields is not None:
+                kwargs["update_fields"] = {*update_fields, "selling_price_local"}
+        super().save(*args, **kwargs)
+        self._stored_pricing_inputs = self._pricing_inputs()
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        book = super().from_db(db, field_names, values)
+        book._stored_pricing_inputs = book._pricing_inputs()
+        return book
+
+    @property
+    def currency(self) -> str:
+        """Local currency the book is priced in, derived from its supplier country."""
+        return SUPPORTED_COUNTRIES[self.supplier_country].currency
+
+    def _pricing_inputs(self):
+        return (self.cost_usd, self.supplier_country)

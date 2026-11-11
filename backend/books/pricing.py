@@ -8,7 +8,6 @@ from django.db import transaction
 from django.utils import timezone
 
 from . import exchange_rates
-from .countries import SUPPORTED_COUNTRIES
 from .models import Book
 
 MARGIN_PERCENTAGE = 40
@@ -40,7 +39,7 @@ def calculate_selling_price(book_id: int) -> PriceCalculation:
     with transaction.atomic():
         # Re-read under lock: cost or country may have changed while the rates were fetched.
         book = Book.objects.select_for_update().get(pk=book_id)
-        currency = SUPPORTED_COUNTRIES[book.supplier_country].currency
+        currency = book.currency
         rate = exchange_rates.resolve_rate(currency, live_rates)
 
         # Rounding cost_local first keeps the breakdown consistent: cost_local x 1.40 = price.

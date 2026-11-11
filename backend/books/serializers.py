@@ -29,6 +29,9 @@ class BookSerializer(serializers.ModelSerializer):
         max_length=ISBN_INPUT_MAX_LENGTH,
         validators=[UniqueValidator(queryset=Book.objects.all(), message=DUPLICATE_ISBN_MESSAGE)],
     )
+    currency = serializers.CharField(
+        read_only=True, help_text="Moneda local del precio de venta, según el país del proveedor."
+    )
 
     class Meta:
         model = Book
@@ -39,6 +42,7 @@ class BookSerializer(serializers.ModelSerializer):
             "isbn",
             "cost_usd",
             "selling_price_local",
+            "currency",
             "stock_quantity",
             "category",
             "supplier_country",
@@ -53,16 +57,6 @@ class BookSerializer(serializers.ModelSerializer):
                 "error_messages": {"min_value": "El stock no puede ser negativo."},
             },
         }
-
-    def update(self, instance, validated_data):
-        # The stored selling price came from the old cost and currency, so it no longer applies.
-        pricing_changed = any(
-            field in validated_data and validated_data[field] != getattr(instance, field)
-            for field in ("cost_usd", "supplier_country")
-        )
-        if pricing_changed:
-            validated_data["selling_price_local"] = None
-        return super().update(instance, validated_data)
 
     def save(self, **kwargs):
         # UniqueValidator can lose a race against a concurrent request (e.g. a double submit);

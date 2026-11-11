@@ -57,6 +57,18 @@ class CreateBookTests(ErrorFormatMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.data["selling_price_local"])
 
+    def test_returns_the_currency_of_the_supplier_country(self):
+        for country, currency in [("ES", "EUR"), ("MX", "MXN"), ("US", "USD")]:
+            with self.subTest(country=country):
+                Book.objects.all().delete()
+                response = self.client.post(
+                    LIST_URL,
+                    book_payload(supplier_country=country, currency="XXX"),
+                    format="json",
+                )
+
+                self.assertEqual(response.data["currency"], currency)
+
     def test_requires_mandatory_fields(self):
         response = self.client.post(LIST_URL, {}, format="json")
 
