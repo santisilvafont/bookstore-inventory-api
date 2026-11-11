@@ -57,7 +57,9 @@ describe('CatalogPage', () => {
     expect(await screen.findByText('Don Quijote de la Mancha')).toBeInTheDocument()
     expect(within(rowFor('Don Quijote')).getByText('20,02')).toBeInTheDocument()
     expect(within(rowFor('Don Quijote')).getByText('EUR')).toBeInTheDocument()
-    expect(within(rowFor('Kafka')).getByText('Sin calcular')).toBeInTheDocument()
+    expect(
+      within(rowFor('Kafka')).getByRole('button', { name: /Calcular precio de venta/ }),
+    ).toBeInTheDocument()
     expect(within(rowFor('Kafka')).getByText('· bajo')).toBeInTheDocument()
     expect(within(rowFor('La ciudad')).getByText('Agotado')).toBeInTheDocument()
     expect(within(rowFor('Kafka')).getByTitle('Japón')).toHaveTextContent('JP')

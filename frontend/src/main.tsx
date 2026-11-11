@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router'
 
 import { App } from './App'
 import { createQueryClient } from './api/queryClient'
+import { Toaster } from './components/ui/Toaster'
 import './index.css'
 
 const root = document.getElementById('root')
@@ -17,6 +18,7 @@ createRoot(root).render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <App />
+        <Toaster />
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

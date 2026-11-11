@@ -1,5 +1,9 @@
+import { Link, useLocation } from 'react-router'
+
 import type { Book } from '../../../api/types'
 import { formatAmount } from '../../../lib/format'
+import { detailLinkState } from '../navigation'
+import { PriceCell } from './PriceCell'
 import { StockLevel } from './StockLevel'
 
 const HEADER_CELL = 'px-3 pt-2 pb-2.5 font-medium first:pl-0 last:pr-0'
@@ -13,6 +17,9 @@ interface BookTableProps {
 }
 
 export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }: BookTableProps) {
+  // The detail panel opens over the catalog, so its URL keeps the current filters.
+  const { search } = useLocation()
+
   return (
     <div className="overflow-x-auto">
       <table
@@ -49,7 +56,13 @@ export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }
           {books.map((book) => (
             <tr key={book.id} className="border-t border-line">
               <td className={CELL}>
-                <p className="font-semibold">{book.title}</p>
+                <Link
+                  to={{ pathname: `/books/${book.id}`, search }}
+                  state={detailLinkState}
+                  className="font-semibold underline-offset-4 hover:text-accent-text hover:underline"
+                >
+                  {book.title}
+                </Link>
                 <p className="text-[13px] text-muted">{book.author}</p>
               </td>
               <td className={CELL}>{book.category}</td>
@@ -69,14 +82,7 @@ export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }
                 {formatAmount(book.cost_usd, 'USD')}
               </td>
               <td className={`${CELL} text-right whitespace-nowrap tabular-nums`}>
-                {book.selling_price_local === null ? (
-                  <span className="text-muted">Sin calcular</span>
-                ) : (
-                  <>
-                    {formatAmount(book.selling_price_local, book.currency)}{' '}
-                    <span className="text-xs text-muted">{book.currency}</span>
-                  </>
-                )}
+                <PriceCell book={book} />
               </td>
             </tr>
           ))}

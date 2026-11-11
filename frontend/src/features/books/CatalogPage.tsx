@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
-import { useSearchParams } from 'react-router'
+import { Outlet, useSearchParams } from 'react-router'
 
 import { ApiError } from '../../api/client'
 import { describeError } from '../../api/errors'
@@ -111,6 +111,9 @@ export function CatalogPage() {
           />
         </>
       ) : null}
+
+      {/* The book detail panel (/books/:id) opens over the catalog. */}
+      <Outlet />
     </div>
   )
 }

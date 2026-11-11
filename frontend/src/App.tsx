@@ -2,13 +2,16 @@ import { Link, Route, Routes } from 'react-router'
 
 import { AppLayout } from './components/layout/AppLayout'
 import { StatusMessage } from './components/ui/StatusMessage'
+import { BookDetailPanel } from './features/books/BookDetailPanel'
 import { CatalogPage } from './features/books/CatalogPage'
 
 export function App() {
   return (
     <AppLayout>
       <Routes>
-        <Route index element={<CatalogPage />} />
+        <Route path="/" element={<CatalogPage />}>
+          <Route path="books/:bookId" element={<BookDetailPanel />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </AppLayout>

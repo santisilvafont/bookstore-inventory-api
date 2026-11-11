@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
 import { MemoryRouter, useLocation } from 'react-router'
 
+import { Toaster } from '../components/ui/Toaster'
+
 function CurrentLocation() {
   const { pathname, search } = useLocation()
   return <output data-testid="current-location" hidden>{`${pathname}${search}`}</output>
@@ -21,6 +23,7 @@ export function renderWithProviders(ui: ReactElement, { route = '/' } = {}) {
         <MemoryRouter initialEntries={[route]}>
           {ui}
           <CurrentLocation />
+          <Toaster />
         </MemoryRouter>
       </QueryClientProvider>,
     ),

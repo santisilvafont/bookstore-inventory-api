@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatAmount, formatInteger } from './format'
+import { formatAmount, formatDateTime, formatInteger, formatMoney, formatRate } from './format'
 
 describe('formatAmount', () => {
   it('uses Spanish separators and two decimals for most currencies', () => {
@@ -14,8 +14,31 @@ describe('formatAmount', () => {
   })
 })
 
+describe('formatMoney', () => {
+  it('appends the currency code', () => {
+    expect(formatMoney(19.03, 'EUR')).toBe('19,03 EUR')
+  })
+})
+
 describe('formatInteger', () => {
   it('groups thousands', () => {
     expect(formatInteger(12500)).toBe('12.500')
+  })
+})
+
+describe('formatRate', () => {
+  it('keeps up to six decimals without trailing zeros', () => {
+    expect(formatRate(0.85)).toBe('0,85')
+    expect(formatRate(18.6123456)).toBe('18,612346')
+  })
+})
+
+describe('formatDateTime', () => {
+  it('formats an ISO timestamp', () => {
+    expect(formatDateTime('2026-11-11T10:30:00Z')).toMatch(/2026/)
+  })
+
+  it('returns an empty string instead of failing on an invalid date', () => {
+    expect(formatDateTime('not a date')).toBe('')
   })
 })

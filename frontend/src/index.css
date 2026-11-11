@@ -71,6 +71,24 @@
   --font-sans: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
 }
 
+@theme {
+  --animate-fade-in: fade-in 180ms ease-out;
+  --animate-panel-in: panel-in 180ms ease-out;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      transform: translateX(24px);
+    }
+  }
+}
+
 @layer base {
   body {
     @apply bg-paper font-sans text-sm text-ink antialiased;
@@ -79,5 +97,10 @@
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
+  }
+
+  /* An open dialog disables pointer events on the page; toasts must stay clickable. */
+  [data-sonner-toaster] {
+    pointer-events: auto;
   }
 }
