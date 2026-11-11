@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router'
 
 import type { Book } from '../../../api/types'
 import { formatAmount } from '../../../lib/format'
-import { detailLinkState } from '../navigation'
+import { inAppNavigationState } from '../navigation'
 import { PriceCell } from './PriceCell'
 import { StockLevel } from './StockLevel'
 
@@ -58,7 +58,7 @@ export function BookTable({ books, countryNames, lowStockThreshold, isUpdating }
               <td className={CELL}>
                 <Link
                   to={{ pathname: `/books/${book.id}`, search }}
-                  state={detailLinkState}
+                  state={inAppNavigationState}
                   className="font-semibold underline-offset-4 hover:text-accent-text hover:underline"
                 >
                   {book.title}

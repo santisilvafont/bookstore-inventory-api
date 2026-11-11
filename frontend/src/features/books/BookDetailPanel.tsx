@@ -1,36 +1,29 @@
-import { useLocation, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useParams } from 'react-router'
 
 import { ApiError } from '../../api/client'
-import { describeError } from '../../api/errors'
 import type { Book, PriceCalculation } from '../../api/types'
 import { Button } from '../../components/ui/Button'
+import { buttonClasses } from '../../components/ui/buttonStyles'
 import { SidePanel } from '../../components/ui/SidePanel'
 import { Spinner } from '../../components/ui/Spinner'
-import { StatusMessage } from '../../components/ui/StatusMessage'
 import { formatAmount, formatInteger, formatMoney } from '../../lib/format'
+import { BookLoadError } from './components/BookLoadError'
 import { PriceBreakdown } from './components/PriceBreakdown'
-import { cameFromCatalog } from './navigation'
+import { inAppNavigationState, parseBookId, useCloseOverlay } from './navigation'
 import { useBook, useCalculatePrice, useCountries, useLatestPriceCalculation } from './queries'
 
 export function BookDetailPanel() {
-  const { bookId = '' } = useParams()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const id = parseBookId(useParams().bookId)
+  const close = useCloseOverlay()
 
-  // Back to the catalog with the same filters and page, without leaving a history entry behind.
-  const close = () =>
-    cameFromCatalog(location.state)
-      ? navigate(-1)
-      : navigate({ pathname: '/', search: location.search }, { replace: true })
-
-  if (!/^[1-9]\d*$/.test(bookId)) {
+  if (id === null) {
     return (
       <SidePanel title="Libro no encontrado" onClose={close}>
         <p className="text-muted">La dirección no corresponde a ningún libro.</p>
       </SidePanel>
     )
   }
-  return <BookDetail id={Number(bookId)} onClose={close} />
+  return <BookDetail id={id} onClose={close} />
 }
 
 function BookDetail({ id, onClose }: { id: number; onClose: () => void }) {
@@ -49,14 +42,12 @@ function BookDetail({ id, onClose }: { id: number; onClose: () => void }) {
 
   if (book.isError) {
     const isMissing = book.error instanceof ApiError && book.error.status === 404
-    const { title, description } = describeError(book.error)
     return (
-      <SidePanel title={isMissing ? 'Libro no encontrado' : title} onClose={onClose}>
-        <StatusMessage
-          tone={isMissing ? 'neutral' : 'error'}
-          title={isMissing ? 'Este libro no existe o fue eliminado.' : description}
-          action={!isMissing && <Button onClick={() => book.refetch()}>Reintentar</Button>}
-        />
+      <SidePanel
+        title={isMissing ? 'Libro no encontrado' : 'No se pudo cargar el libro'}
+        onClose={onClose}
+      >
+        <BookLoadError error={book.error} onRetry={() => book.refetch()} />
       </SidePanel>
     )
   }
@@ -73,6 +64,7 @@ function BookDetailContent({ book, onClose }: { book: Book; onClose: () => void 
     countries.data?.find((country) => country.code === book.supplier_country)?.name ??
     book.supplier_country
   const hasPrice = book.selling_price_local !== null
+  const { search } = useLocation()
 
   return (
     <SidePanel
@@ -80,14 +72,23 @@ function BookDetailContent({ book, onClose }: { book: Book; onClose: () => void 
       title={book.title}
       onClose={onClose}
       footer={
-        <Button variant="primary" onClick={calculate} disabled={isCalculating}>
-          {isCalculating && <Spinner />}
-          {isCalculating
-            ? 'Calculando…'
-            : hasPrice
-              ? 'Recalcular precio'
-              : 'Calcular precio de venta'}
-        </Button>
+        <>
+          <Button variant="primary" onClick={calculate} disabled={isCalculating}>
+            {isCalculating && <Spinner />}
+            {isCalculating
+              ? 'Calculando…'
+              : hasPrice
+                ? 'Recalcular precio'
+                : 'Calcular precio de venta'}
+          </Button>
+          <Link
+            to={{ pathname: `/books/${book.id}/edit`, search }}
+            state={inAppNavigationState}
+            className={buttonClasses()}
+          >
+            Editar
+          </Link>
+        </>
       }
     >
       <p className="-mt-4 text-base text-muted">{book.author}</p>

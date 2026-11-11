@@ -1,6 +1,8 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import type { ReactNode } from 'react'
 
+import { ignoreToastInteractions } from './dialog'
+
 interface SidePanelProps {
   title: ReactNode
   eyebrow?: ReactNode
@@ -21,12 +23,7 @@ export function SidePanel({ title, eyebrow, footer, onClose, children }: SidePan
         <Dialog.Overlay className="fixed inset-0 bg-scrim motion-safe:animate-fade-in" />
         <Dialog.Content
           aria-describedby={undefined}
-          // Toasts live outside the panel; using one must not count as clicking outside.
-          onInteractOutside={(event) => {
-            if (event.target instanceof Element && event.target.closest('[data-sonner-toaster]')) {
-              event.preventDefault()
-            }
-          }}
+          onInteractOutside={ignoreToastInteractions}
           className="fixed inset-y-0 right-0 flex w-full max-w-120 flex-col border-l border-line bg-surface shadow-[-12px_0_32px_rgb(20_18_15/0.14)] focus:outline-none motion-safe:animate-panel-in"
         >
           <div className="flex items-center justify-between gap-4 px-7 pt-5">

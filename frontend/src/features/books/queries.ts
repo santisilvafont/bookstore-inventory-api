@@ -11,13 +11,21 @@ import {
 import { useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
-import { type BookFilter, calculatePrice, getBook, listBooks, listCountries } from '../../api/books'
+import {
+  type BookFilter,
+  calculatePrice,
+  createBook,
+  getBook,
+  listBooks,
+  listCountries,
+  updateBook,
+} from '../../api/books'
 import { ApiError } from '../../api/client'
-import type { Book, Paginated, PriceCalculation } from '../../api/types'
+import type { Book, BookInput, Paginated, PriceCalculation } from '../../api/types'
 import { formatMoney } from '../../lib/format'
 import { notifyError } from '../../lib/notify'
 import { PAGE_SIZE } from './catalogParams'
-import { detailLinkState } from './navigation'
+import { inAppNavigationState } from './navigation'
 
 export const bookKeys = {
   all: ['books'] as const,
@@ -25,7 +33,8 @@ export const bookKeys = {
   list: (filter: BookFilter, page: number, pageSize: number) =>
     [...bookKeys.lists(), filter, page, pageSize] as const,
   // Totals have their own prefix: a new price changes a page, never how many books there are.
-  count: (filter: BookFilter) => [...bookKeys.all, 'count', filter] as const,
+  counts: () => [...bookKeys.all, 'count'] as const,
+  count: (filter: BookFilter) => [...bookKeys.counts(), filter] as const,
   detail: (id: number) => [...bookKeys.all, 'detail', id] as const,
   priceCalculation: (id: number) => [...bookKeys.all, 'price-calculation', id] as const,
   countries: ['countries'] as const,
@@ -114,7 +123,7 @@ export function useCalculatePrice(book: Pick<Book, 'id' | 'title'>) {
                 onClick: () =>
                   navigate(
                     { pathname: detailPath, search: location.search },
-                    { state: detailLinkState },
+                    { state: inAppNavigationState },
                   ),
               },
       })
@@ -135,6 +144,29 @@ export function useCalculatePrice(book: Pick<Book, 'id' | 'title'>) {
   const isCalculating = useIsMutating({ mutationKey }) > 0
 
   return { calculate: () => mutation.mutate(), isCalculating }
+}
+
+/** Creates a book, or replaces book `id` (PUT) when given. */
+export function useSaveBook(id?: number) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: BookInput) =>
+      id === undefined ? createBook(input) : updateBook(id, input),
+    onSuccess: (book) => {
+      queryClient.setQueryData(bookKeys.detail(book.id), book)
+      // Stock or category changes can move the book between pages, tabs and totals.
+      return Promise.all([
+        queryClient.invalidateQueries({ queryKey: bookKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: bookKeys.counts() }),
+      ])
+    },
+    onError: (error) => {
+      // Edited a book that was deleted elsewhere: refresh everything so it disappears.
+      if (error instanceof ApiError && error.status === 404) {
+        return queryClient.invalidateQueries({ queryKey: bookKeys.all })
+      }
+    },
+  })
 }
 
 export function useCountries() {
