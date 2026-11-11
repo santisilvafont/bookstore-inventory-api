@@ -87,8 +87,21 @@ class PriceCalculationSerializer(serializers.Serializer):
     margin_percentage = serializers.IntegerField(read_only=True)
     selling_price_local = serializers.DecimalField(max_digits=20, decimal_places=2, read_only=True)
     currency = serializers.CharField(read_only=True)
-    rate_source = serializers.CharField(read_only=True)
+    rate_source = serializers.ChoiceField(choices=["live", "default"], read_only=True)
     calculation_timestamp = serializers.DateTimeField(read_only=True)
+
+
+# Documents the error format produced by config.exceptions.api_exception_handler. A comment and
+# not a docstring, because drf-spectacular would publish a docstring in the API documentation.
+class ErrorResponseSerializer(serializers.Serializer):
+    status = serializers.IntegerField()
+    code = serializers.CharField()
+    detail = serializers.CharField()
+    errors = serializers.DictField(
+        child=serializers.ListField(child=serializers.CharField()),
+        required=False,
+        help_text="Solo en errores 400: mensajes por campo.",
+    )
 
 
 class CategorySearchSerializer(serializers.Serializer):

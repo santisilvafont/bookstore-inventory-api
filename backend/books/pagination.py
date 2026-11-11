@@ -20,3 +20,18 @@ class BookPagination(PageNumberPagination):
                 "results": data,
             }
         )
+
+    def get_paginated_response_schema(self, schema):
+        response_schema = super().get_paginated_response_schema(schema)
+        response_schema["required"] = [
+            *response_schema["required"],
+            "total_pages",
+            "page",
+            "page_size",
+        ]
+        response_schema["properties"] |= {
+            "total_pages": {"type": "integer", "example": 3},
+            "page": {"type": "integer", "example": 1},
+            "page_size": {"type": "integer", "example": self.page_size},
+        }
+        return response_schema
